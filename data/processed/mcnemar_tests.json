@@ -1,0 +1,18 @@
+{
+  "consensus_vs_if_anomaly": {
+    "method_a": "consensus",
+    "method_b": "if_anomaly",
+    "b01_a_right_b_wrong": 1,
+    "b10_a_wrong_b_right": 0,
+    "p_value": 1.0,
+    "significant": false
+  },
+  "weighted_consensus_vs_if_anomaly": {
+    "method_a": "weighted_consensus",
+    "method_b": "if_anomaly",
+    "b01_a_right_b_wrong": 1,
+    "b10_a_wrong_b_right": 0,
+    "p_value": 1.0,
+    "significant": false
+  }
+}
