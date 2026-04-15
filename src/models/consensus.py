@@ -133,14 +133,36 @@ class ConsensusDetector:
         else:
             result["cusum_anomaly"] = 0
 
-        # --- 4. Consenso ---
+        # --- 4. Consenso simple (votación) ---
         votes = result["if_anomaly"] + result["stl_anomaly"] + result["cusum_anomaly"]
         result["consensus"] = (votes >= self.min_agreement).astype(int)
         result["n_techniques"] = votes
 
+        # --- 5. Consenso ponderado por dependencia hidroeléctrica ---
+        # Novelty: w_hydro_techniques = alpha * hydro_share
+        # Países con alta hidro → más peso a STL/CUSUM (especializados en hidro)
+        # Países con baja hidro → más peso a IF (multivariado)
+        hydro_share = df[hydro_col].mean() / 100 if hydro_col in df.columns else 0.5
+        alpha = min(hydro_share * 2, 1.0)  # Escalar a [0, 1]
+
+        w_if = 1.0 - 0.3 * alpha       # IF siempre tiene peso base alto
+        w_stl = 0.5 + 0.5 * alpha      # STL sube con más hidro
+        w_cusum = 0.5 + 0.5 * alpha    # CUSUM sube con más hidro
+
+        weighted_score = (
+            w_if * result["if_anomaly"]
+            + w_stl * result["stl_anomaly"]
+            + w_cusum * result["cusum_anomaly"]
+        )
+        w_threshold = (w_if + w_stl + w_cusum) * 0.4  # 40% del peso total
+        result["weighted_consensus"] = (weighted_score >= w_threshold).astype(int)
+        result["weighted_score"] = weighted_score
+        result["hydro_dependency"] = hydro_share
+
         n_cons = result["consensus"].sum()
+        n_wcons = result["weighted_consensus"].sum()
         logger.info(
-            f"Consenso: {n_cons} anomalías "
+            f"Consenso: {n_cons} (simple), {n_wcons} (ponderado, hydro={hydro_share:.1%}) "
             f"(IF={result['if_anomaly'].sum()}, "
             f"STL={result['stl_anomaly'].sum()}, "
             f"CUSUM={result['cusum_anomaly'].sum()})"
@@ -169,8 +191,12 @@ class ConsensusDetector:
             all_results.append(result)
 
         combined = pd.concat(all_results, ignore_index=True)
-        total = combined["consensus"].sum()
-        logger.info(f"Total multi-país: {total} anomalías de consenso en {len(combined)} meses")
+        total_s = combined["consensus"].sum()
+        total_w = combined["weighted_consensus"].sum()
+        logger.info(
+            f"Total multi-país: {total_s} simple, {total_w} ponderado "
+            f"en {len(combined)} meses"
+        )
         return combined
 
     @staticmethod

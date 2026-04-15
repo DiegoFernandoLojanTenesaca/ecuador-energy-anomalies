@@ -14,14 +14,27 @@ Ecuador generates ~70% of its electricity from **hydropower**. Droughts cause bl
 
 ![Demand with anomalies](docs/images/01_ecuador_demanda_anomalias.png)
 
-| Metric | IF per country | STL | CUSUM | **Consensus ≥2** |
-|--------|---------------|-----|-------|-----------------|
-| Precision | 50.0% | 28.6% | 18.8% | **60.0%** |
-| Recall | 100% | 66.7% | 100% | **100%** |
-| F1-Score | 66.7% | 40.0% | 31.6% | **75.0%** |
-| MCC | 0.694 | 0.407 | 0.397 | **0.765** |
+**Ground Truth: Strict (oct-dec 2024, 3 months — peak crisis)**
 
-> Metrics reproduced from `data/processed/metrics.json` via `python scripts/train_model.py`
+| Metric | IF | STL | CUSUM | **Consensus** | Weighted |
+|--------|-----|-----|-------|-------------|----------|
+| Precision | 50.0% | 28.6% | 18.8% | **60.0%** | 60.0% |
+| Recall | 100% | 66.7% | 100% | **100%** | 100% |
+| F1-Score | 0.667 | 0.400 | 0.316 | **0.750** | 0.750 |
+| MCC | 0.694 | 0.407 | 0.397 | **0.765** | 0.765 |
+
+**Ground Truth: Broad (apr-dec 2024, 9 months — Executive Decree 229)**
+
+| Metric | IF | STL | CUSUM | **Consensus** | Weighted |
+|--------|-----|-----|-------|-------------|----------|
+| Precision | 50.0% | 42.9% | 18.8% | **60.0%** | 60.0% |
+| Recall | 33.3% | 33.3% | 33.3% | 33.3% | 33.3% |
+| F1-Score | 0.400 | 0.375 | 0.240 | **0.429** | 0.429 |
+| MCC | 0.353 | 0.314 | 0.128 | **0.401** | 0.401 |
+
+> All metrics from `data/processed/metrics.json`. Reproduce: `python scripts/train_model.py`
+>
+> Ecuador crisis officially declared via [Executive Decree No. 229](https://www.cenace.gob.ec/) (Apr 19, 2024) and [CENACE Annual Report 2024](https://www.cenace.gob.ec/wp-content/uploads/downloads/2025/04/Informe-Anual-CENACE-2024-vf-1-88_c.pdf).
 
 ---
 
@@ -79,16 +92,28 @@ Instead of relying on a single model, we use **3 complementary techniques** and 
 
 ---
 
+## Key Finding: Hydro Dependency Determines Effectiveness
+
+![Hydro vs F1](docs/images/29_hydro_vs_f1.png)
+
+The consensus approach works best in **hydro-dependent countries** (>30% hydro). In fossil-dominant countries, energy crises have different signatures (fuel prices, heatwaves) not captured by hydro-focused STL/CUSUM.
+
+| Country | Hydro % | F1 (Consensus) | Crisis Type |
+|---------|---------|---------------|-------------|
+| Brazil | 47.9% | **0.727** | Drought (hydro) |
+| Colombia | 41.1% | 0.429 | El Nino (hydro) |
+| Ecuador | 38.1% | **0.750** | Drought (hydro) |
+| Uruguay | 21.0% | — | No documented crisis |
+| Chile | 14.3% | 0.000 | Mega-drought (not electrical) |
+| Argentina | 13.6% | 0.000 | Heatwave (thermal) |
+
+---
+
 ## Confidence Intervals (Bootstrap 95%)
 
 ![Confidence intervals](docs/images/21_confidence_intervals.png)
 
-| Technique | F1 Mean | 95% CI |
-|-----------|---------|--------|
-| **Consensus** | **0.748** | **[0.400, 1.000]** |
-| IF | 0.664 | [0.286, 1.000] |
-| STL | 0.380 | [0.000, 0.750] |
-| CUSUM | 0.318 | [0.105, 0.571] |
+McNemar test (Consensus vs IF): p=1.000 — not statistically significant with n=73. The CI overlap confirms this is a limitation of the sample size, not the method.
 
 ---
 
@@ -187,17 +212,33 @@ streamlit run app/app.py
 
 ## Limitations (Honest)
 
-- Monthly granularity misses gradual crises (2023 drought: only 2/4 detected by STL)
-- Programmed blackouts (Apr-Jun 2024) don't change generation volumes → undetectable
-- 85 real months for Ecuador is the minimum viable for this analysis
-- Clustering metrics (Silhouette=0.23) reflect the small sample size, not model failure
+- **McNemar p=1.0**: Cannot statistically prove consensus > IF with n=73. Difference exists (F1: 0.750 vs 0.667) but insufficient power.
+- **Wide bootstrap CI**: Consensus F1=[0.400, 1.000] reflects small sample, not model failure.
+- **Fails in low-hydro countries**: Chile (F1=0.0) and Argentina (F1=0.0) have non-hydro crises undetectable by STL/CUSUM.
+- **Monthly granularity**: Programmed blackouts (Apr-Jun 2024) don't change generation volumes.
+- **Broad GT recall=33%**: With 9-month decree as GT, model only detects 3 peak months (the most severe).
+- **85 months Ecuador**: Minimum viable. More data would narrow CIs and increase statistical power.
+
+## Official Sources (Ground Truth)
+
+| Country | Crisis | Official Source |
+|---------|--------|----------------|
+| Ecuador | Apr-Dec 2024 | Executive Decree No. 229; CENACE Annual Report 2024 |
+| Brazil | Jun-Nov 2021 | Decree 10.939/2021; MP 1.055/2021 (CREG) |
+| Colombia | Jan-Jun 2024 | XM Colombia market reports; +22.68% wholesale prices |
+| Chile | 2019 (acute) | U. de Chile; Biblioteca del Congreso Nacional |
+| Argentina | Jan-Mar 2022 | SMN Argentina; FARN climate report |
 
 ## References
 
-- Liu et al. (2008). *Isolation Forest*. IEEE ICDM.
-- Cleveland et al. (1990). *STL: A Seasonal-Trend Decomposition*. J. Official Statistics.
-- Page (1954). *Continuous Inspection Schemes*. Biometrika (CUSUM).
-- Chandola et al. (2009). *Anomaly Detection: A Survey*. ACM Computing Surveys.
+- Liu, F.T., Ting, K.M., Zhou, Z.H. (2008). *Isolation Forest*. IEEE ICDM.
+- Cleveland, R.B. et al. (1990). *STL: A Seasonal-Trend Decomposition*. J. Official Statistics.
+- Page, E.S. (1954). *Continuous Inspection Schemes*. Biometrika.
+- Chandola, V. et al. (2009). *Anomaly Detection: A Survey*. ACM Computing Surveys.
+- Himeur, Y. et al. (2021). *AI-based anomaly detection of energy consumption*. Applied Energy.
+- Akiba, T. et al. (2019). *Optuna*. ACM SIGKDD.
+- CENACE (2025). *Informe Anual 2024*. cenace.gob.ec.
+- Ember (2026). *Global Electricity Data*. ember-energy.org.
 
 ---
 
