@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+
+# Model artifacts (regenerable via: python scripts/train_model.py)
+models/*.joblib
+models/*.pkl
+
+# Data cache
+data/cache/*
+!data/cache/.gitkeep
+
+# Environment
+.env
+
+# IDE
+.idea/
+.vscode/
+*.swp
+.claude/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Optuna
+*.db

@@ -1,0 +1,38 @@
+{
+  "isolation_forest": {
+    "precision": 0.5,
+    "recall": 1.0,
+    "f1": 0.6666666666666666,
+    "mcc": 0.6940513792747413,
+    "n_anomalies": 6,
+    "crisis_detected": 3,
+    "crisis_total": 3
+  },
+  "stl": {
+    "precision": 0.2857142857142857,
+    "recall": 0.6666666666666666,
+    "f1": 0.4,
+    "mcc": 0.40655788976275214,
+    "n_anomalies": 7,
+    "crisis_detected": 2,
+    "crisis_total": 3
+  },
+  "cusum": {
+    "precision": 0.1875,
+    "recall": 1.0,
+    "f1": 0.3157894736842105,
+    "mcc": 0.3972082454379597,
+    "n_anomalies": 16,
+    "crisis_detected": 3,
+    "crisis_total": 3
+  },
+  "consensus": {
+    "precision": 0.6,
+    "recall": 1.0,
+    "f1": 0.75,
+    "mcc": 0.765092055676006,
+    "n_anomalies": 5,
+    "crisis_detected": 3,
+    "crisis_total": 3
+  }
+}

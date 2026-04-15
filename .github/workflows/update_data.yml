@@ -1,0 +1,46 @@
+name: Update Energy Data
+
+on:
+  schedule:
+    # Ejecutar cada lunes a las 6:00 UTC (1:00 Ecuador)
+    - cron: '0 6 * * 1'
+  workflow_dispatch:  # Permitir ejecución manual
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Scrape latest data
+        run: python scripts/scrape_all.py
+        env:
+          SCRAPER_DELAY_SECONDS: "5"
+
+      - name: Train model
+        run: python scripts/train_model.py
+
+      - name: Commit updated data
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add data/processed/ models/
+          git diff --staged --quiet || git commit -m "chore: update energy data and model [skip ci]"
+
+      - name: Push to HuggingFace
+        if: env.HF_TOKEN != ''
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          git remote add hf https://huggingface.co/spaces/${{ github.repository_owner }}/ecuador-energy-anomalies || true
+          git push hf main --force
