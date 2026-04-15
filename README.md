@@ -59,15 +59,62 @@ Instead of relying on a single model, we use **3 complementary techniques** and 
 
 ---
 
+## Baseline Comparison (9 Models)
+
+![9 baselines](docs/images/19_baselines_9modelos.png)
+
+| Model | Precision | Recall | F1 | MCC |
+|-------|-----------|--------|-----|-----|
+| **Consensus ≥2** | **0.600** | **1.000** | **0.750** | **0.763** |
+| IF per country | 0.500 | 1.000 | 0.667 | 0.692 |
+| LOF | 0.500 | 1.000 | 0.667 | 0.692 |
+| LSTM-AE | 0.273 | 1.000 | 0.429 | 0.491 |
+| Prophet | 0.333 | 0.667 | 0.444 | 0.441 |
+| Elliptic Envelope | 0.167 | 0.333 | 0.222 | 0.189 |
+| DBSCAN | 0.056 | 1.000 | 0.105 | 0.123 |
+| One-Class SVM | 0.056 | 0.333 | 0.095 | 0.042 |
+| ARIMA | 0.000 | 0.000 | 0.000 | 0.000 |
+
+> Reproducible: `python scripts/run_full_comparison.py` → `data/processed/baselines_comparison.json`
+
+---
+
+## Confidence Intervals (Bootstrap 95%)
+
+![Confidence intervals](docs/images/21_confidence_intervals.png)
+
+| Technique | F1 Mean | 95% CI |
+|-----------|---------|--------|
+| **Consensus** | **0.748** | **[0.400, 1.000]** |
+| IF | 0.664 | [0.286, 1.000] |
+| STL | 0.380 | [0.000, 0.750] |
+| CUSUM | 0.318 | [0.105, 0.571] |
+
+---
+
+## Cross-Country Validation
+
+![Cross-country consensus](docs/images/20_cross_country.png)
+
+![All methods by country](docs/images/23_cross_country_all_methods.png)
+
+---
+
+## Sensitivity Analysis
+
+![Sensitivity heatmap](docs/images/22_sensitivity_heatmap.png)
+
+Best config found: `contamination=0.05, stl_sigma=1.5, cusum_factor=4.0` → F1=0.857, MCC=0.861
+
+---
+
 ## Ecuador Energy Mix
 
 ![Energy mix](docs/images/02_ecuador_mix_energetico.png)
 
-![CO2 intensity](docs/images/08_co2_intensity.png)
-
 ---
 
-## Cross-Country Analysis
+## Anomalies by Country
 
 ![Heatmap anomalies by country](docs/images/04_heatmap_paises.png)
 
