@@ -155,13 +155,16 @@ Best config found: `contamination=0.05, stl_sigma=1.5, cusum_factor=4.0` → F1=
 
 ## Statistical Validation
 
-| Variable | p-value | Cohen's d | Effect |
-|----------|---------|-----------|--------|
-| gen_hydro | 0.002** | 1.29 | LARGE |
-| gen_fossil | 0.003** | 1.30 | LARGE |
-| co2_intensity | 0.008** | 1.22 | LARGE |
+| Variable | Normal μ | Anomaly μ | p-value | Cohen's d | Effect |
+|----------|----------|-----------|---------|-----------|--------|
+| gen_hydro | 38.71% | 28.72% | 0.0004*** | 2.81 | LARGE |
+| gen_fossil | 11.87% | 21.47% | 0.0004*** | 3.14 | LARGE |
+| co2_intensity | 175.7 | 298.5 | 0.0003*** | 3.15 | LARGE |
+| importaciones | 0.04 | 0.16 | 0.0045** | 1.37 | LARGE |
+| demanda_twh | 2.86 | 2.87 | 0.9702 ns | 0.04 | SMALL |
 
-All metrics are **reproducible**: `python scripts/train_model.py` generates `data/processed/metrics.json`.
+> Cohen's d > 2.0 indicates **very large** effect sizes. Anomalous months have dramatically different hydro/fossil profiles.
+> Demand shows no significant difference — crises affect the generation mix, not total demand.
 
 ---
 

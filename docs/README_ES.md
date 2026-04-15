@@ -1,114 +1,100 @@
 # ⚡ Ecuador Energy Anomalies
 
-> Detección de anomalías multi-técnica en el sector eléctrico de Latinoamérica. Isolation Forest + STL Decomposition + CUSUM, validado contra la crisis energética de Ecuador 2024. 8 países, 784 meses de datos reales.
+> Detección multi-técnica de anomalías en el sector eléctrico latinoamericano. Isolation Forest + STL + CUSUM, validado contra la crisis energética de Ecuador 2024. 8 países, 784 meses de datos reales.
 
 [![English](https://img.shields.io/badge/language-English-blue)](../README.md) [![Python](https://img.shields.io/badge/python-3.11-blue)](https://python.org) [![License: MIT](https://img.shields.io/badge/license-MIT-green)](../LICENSE)
 
 ---
 
-## ¿Por qué este proyecto?
+## Resultados Clave
 
-Ecuador genera ~70% de su electricidad con **hidroeléctricas**. Las sequías causan apagones de hasta 14 horas. Este proyecto detecta crisis energéticas automáticamente usando 3 técnicas complementarias y explica **por qué** cada anomalía fue marcada.
+![Demanda con anomalías](../docs/images/01_ecuador_demanda_anomalias.png)
 
-### Resultados Clave
+**Ground Truth Estricto (oct-dic 2024, 3 meses — crisis severa)**
 
-![Demanda con anomalías](images/01_ecuador_demanda_anomalias.png)
+| Métrica | IF | STL | CUSUM | **Consenso** | Ponderado |
+|---------|-----|-----|-------|-------------|-----------|
+| Precision | 50.0% | 28.6% | 18.8% | **60.0%** | 60.0% |
+| Recall | 100% | 66.7% | 100% | **100%** | 100% |
+| F1-Score | 0.667 | 0.400 | 0.316 | **0.750** | 0.750 |
+| MCC | 0.694 | 0.407 | 0.397 | **0.765** | 0.765 |
 
-| Métrica | IF por país | STL | CUSUM | **Consenso ≥2** |
-|---------|------------|-----|-------|----------------|
-| Precision | 50.0% | 28.6% | 18.8% | **60.0%** |
-| Recall | 100% | 66.7% | 100% | **100%** |
-| F1-Score | 66.7% | 40.0% | 31.6% | **75.0%** |
-| MCC | 0.694 | 0.407 | 0.397 | **0.765** |
+**Ground Truth Amplio (abr-dic 2024, Decreto Ejecutivo 229)**
 
-> Métricas reproducibles desde `data/processed/metrics.json` via `python scripts/train_model.py`
+| Métrica | IF | STL | CUSUM | **Consenso** | Ponderado |
+|---------|-----|-----|-------|-------------|-----------|
+| Precision | 50.0% | 42.9% | 18.8% | **60.0%** | 60.0% |
+| Recall | 33.3% | 33.3% | 33.3% | 33.3% | 33.3% |
+| F1-Score | 0.400 | 0.375 | 0.240 | **0.429** | 0.429 |
 
----
-
-## Datos: 8 Países, 784 Meses Reales
-
-![Dependencia hidro por país](images/06_hidro_por_pais.png)
-
----
-
-## Enfoque de 3 Técnicas
-
-![Comparación multi-técnica](images/03_multitecnica_comparacion.png)
-
-| Técnica | Qué detecta | Crisis Ecuador oct-dic 2024 |
-|---------|-------------|---------------------------|
-| **Isolation Forest** | Outliers multivariados | 3/3 detectados |
-| **STL Decomposition** | Residuales > 2σ tras quitar tendencia | 2/3 detectados |
-| **CUSUM** | Cambios estructurales en generación hidro | 3/3 detectados |
-| **Consenso ≥2** | Confirmado por al menos 2 métodos | **3/3 detectados** |
-
-![Métricas comparativas](images/05_metricas_comparativas.png)
+> Métricas de `metrics.json`. Reproducir: `python scripts/train_model.py`
 
 ---
 
-## Mix Energético de Ecuador
+## Comparación: 9 Modelos
 
-![Mix energético](images/02_ecuador_mix_energetico.png)
+![9 baselines](../docs/images/19_baselines_9modelos.png)
 
-![Intensidad CO2](images/08_co2_intensity.png)
+| Modelo | Precision | Recall | F1 | MCC |
+|--------|-----------|--------|-----|-----|
+| **Consenso ≥2** | **0.600** | **1.000** | **0.750** | **0.763** |
+| IF por país | 0.500 | 1.000 | 0.667 | 0.692 |
+| LOF | 0.500 | 1.000 | 0.667 | 0.692 |
+| LSTM-AE | 0.273 | 1.000 | 0.429 | 0.491 |
+| Prophet | 0.333 | 0.667 | 0.444 | 0.441 |
+| Elliptic Envelope | 0.167 | 0.333 | 0.222 | 0.189 |
+| DBSCAN | 0.056 | 1.000 | 0.105 | 0.123 |
+| One-Class SVM | 0.056 | 0.333 | 0.095 | 0.042 |
+| ARIMA | 0.000 | 0.000 | 0.000 | 0.000 |
 
 ---
 
-## Análisis Multi-País
+## Hallazgo Clave: Dependencia Hidro Determina Efectividad
 
-![Heatmap anomalías por país](images/04_heatmap_paises.png)
+![Hydro vs F1](../docs/images/29_hydro_vs_f1.png)
 
-![LATAM comparativo hidro](images/09_latam_hidro_comparativo.png)
-
----
-
-## Matriz de Confusión
-
-![Matriz confusión](images/07_confusion_matrix.png)
+| País | Hidro % | F1 Consenso | Tipo Crisis |
+|------|---------|-------------|-------------|
+| Brazil | 47.9% | **0.727** | Sequía (hídrica) |
+| Ecuador | 38.1% | **0.750** | Sequía (hídrica) |
+| Colombia | 41.1% | 0.429 | El Niño (hídrica) |
+| Chile | 14.3% | 0.000 | Mega-sequía (no eléctrica) |
+| Argentina | 13.6% | 0.000 | Ola de calor (térmica) |
 
 ---
 
 ## Validación Estadística
 
-| Variable | p-value | Cohen's d | Efecto |
-|----------|---------|-----------|--------|
-| gen_hydro | 0.002** | 1.29 | GRANDE |
-| gen_fossil | 0.003** | 1.30 | GRANDE |
-| co2_intensity | 0.008** | 1.22 | GRANDE |
+| Variable | μ Normal | μ Anomalía | p-value | Cohen's d | Efecto |
+|----------|----------|------------|---------|-----------|--------|
+| gen_hydro | 38.71% | 28.72% | 0.0004*** | 2.81 | MUY GRANDE |
+| gen_fossil | 11.87% | 21.47% | 0.0004*** | 3.14 | MUY GRANDE |
+| co2_intensity | 175.7 | 298.5 | 0.0003*** | 3.15 | MUY GRANDE |
+| importaciones | 0.04 | 0.16 | 0.0045** | 1.37 | GRANDE |
+| demanda_twh | 2.86 | 2.87 | 0.9702 ns | 0.04 | NULO |
 
-Estabilidad: CV = 0.0% en 20 semillas aleatorias.
-
----
-
-## Notebooks de Análisis
-
-| # | Notebook | Descripción |
-|---|----------|-------------|
-| 00 | [Origen y Diccionario](../notebooks/EDA/00_origen_y_diccionario_datos.ipynb) | Fuentes, 20 variables documentadas |
-| 01 | [Carga y Exploración](../notebooks/EDA/01_carga_y_exploracion.ipynb) | Estructura, primeras visualizaciones |
-| 02 | [Limpieza y Calidad](../notebooks/EDA/02_limpieza_y_calidad.ipynb) | Nulos, outliers, consistencia |
-| 03 | [Análisis de Patrones](../notebooks/EDA/03_analisis_patrones.ipynb) | Tendencias, estacionalidad, correlaciones |
-| 04 | [Feature Engineering](../notebooks/EDA/04_feature_engineering.ipynb) | 24 → 213 features |
-| 05 | [Selección de Modelo](../notebooks/EDA/05_seleccion_modelo.ipynb) | IF vs LOF vs SVM |
-| 06 | [Entrenamiento](../notebooks/EDA/06_entrenamiento_evaluacion.ipynb) | Modelo final, SHAP |
-| 07 | [Tuning](../notebooks/EDA/07_tuning_hiperparametros.ipynb) | Optuna, TimeSeriesSplit |
-| 08 | [Validación](../notebooks/EDA/08_validacion_metricas.ipynb) | Tests estadísticos, bootstrap |
+McNemar Consenso vs IF: p=1.000 (no significativo con n=73).
 
 ---
 
 ## Limitaciones (Honestas)
 
-- Datos mensuales suavizan crisis graduales (sequía 2023: solo 2/4 detectada por STL)
-- Apagones programados (abr-jun 2024) no cambian volúmenes → indetectables
-- 85 meses reales para Ecuador es el mínimo viable
-- Silhouette=0.23 refleja el tamaño de muestra, no falla del modelo
+- McNemar p=1.0: No se puede probar estadísticamente consenso > IF con n=73
+- Bootstrap CI amplio: F1=[0.400, 1.000] por N pequeño
+- Falla en países con baja hidro (Chile F1=0, Argentina F1=0)
+- GT amplio recall=33%: Solo detecta los 3 meses pico de 9
+- 85 meses Ecuador es el mínimo viable
+- Datos mensuales suavizan crisis graduales
 
-## Referencias
+## Fuentes Oficiales (Ground Truth)
 
-- Liu et al. (2008). *Isolation Forest*. IEEE ICDM.
-- Cleveland et al. (1990). *STL: A Seasonal-Trend Decomposition*.
-- Page (1954). *Continuous Inspection Schemes*. Biometrika (CUSUM).
-- Chandola et al. (2009). *Anomaly Detection: A Survey*. ACM.
+| País | Crisis | Fuente Oficial |
+|------|--------|----------------|
+| Ecuador | Abr-Dic 2024 | Decreto Ejecutivo 229; Informe Anual CENACE 2024 |
+| Brasil | Jun-Nov 2021 | Decreto 10.939/2021; MP 1.055/2021 |
+| Colombia | Ene-Jun 2024 | Informes XM Colombia; precios +22.68% |
+| Chile | 2019 (agudo) | U. de Chile; Biblioteca del Congreso Nacional |
+| Argentina | Ene-Mar 2022 | SMN Argentina; FARN informe climático |
 
 ---
 
