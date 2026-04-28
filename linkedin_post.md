@@ -52,25 +52,3 @@ me interesa saber qué piensas del enfoque.
 📁 Repo: próximamente en GitHub
 
 #MachineLearning #DataScience #AnomalyDetection #OpenData #Ecuador #EnergySector #Python
-
----
-
-## Checklist antes de publicar
-
-- [ ] Grabar GIF del dashboard (Overview → Detector → Modelos, ~20 seg)
-- [ ] Hacer el repo público en GitHub
-- [ ] Reemplazar [link] con la URL real del demo
-- [ ] Publicar martes o miércoles, 8–10am o 12–1pm (hora Ecuador)
-
-## Imágenes — carrusel (en este orden)
-
-1. `dashboard_demo.gif` — grabar con simplescreenrecorder + ffmpeg
-2. `docs/images/01_ecuador_demanda_anomalias.png`
-3. `docs/images/29_hydro_vs_f1.png`
-4. `docs/images/19_baselines_9modelos.png`
-
-## Convertir grabación a GIF
-
-```bash
-ffmpeg -i grabacion.mp4 -vf "fps=10,scale=800:-1" -loop 0 docs/images/dashboard_demo.gif
-```
